@@ -1,0 +1,8 @@
+subscription MessageAdded($userID: String!){
+    messageAdded(topic: $userID){
+        id
+        topic
+        sender
+        content
+    }
+}
