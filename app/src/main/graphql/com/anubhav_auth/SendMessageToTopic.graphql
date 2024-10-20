@@ -1,7 +1,0 @@
-mutation SendMessage($currentUserID: String!, $reciepeintUserID: String!, $message:String!){
-    sendMessage(sender: $currentUserID, topic: $reciepeintUserID, content: $message){
-        topic
-        content
-        sender
-    }
-}

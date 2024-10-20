@@ -1,7 +1,6 @@
-package com.anubhav_auth.message_practice
+package com.anubhav_auth.message_practice.data.remote
 
-import com.anubhav_auth.MessageAddedSubscription
-import com.apollographql.apollo.api.ApolloResponse
+import com.anubhav_auth.message_practice.data.model.Message
 import kotlinx.coroutines.flow.Flow
 
 interface MessageClient {

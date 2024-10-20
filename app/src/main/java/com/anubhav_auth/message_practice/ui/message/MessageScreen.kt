@@ -1,4 +1,4 @@
-package com.anubhav_auth.message_practice
+package com.anubhav_auth.message_practice.ui.message
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,7 +17,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.anubhav_auth.message_practice.data.model.Message
 
 @Composable
 fun MessageScreen(viewModel: MessageViewModel) {
@@ -34,7 +33,7 @@ fun MessageScreen(viewModel: MessageViewModel) {
     var messageContent by remember { mutableStateOf("") }
 
     // Collect messages from ViewModel
-    val messages by viewModel.messages.collectAsState()
+//    val messages by viewModel.messages.collectAsState()
 
     Column(
         modifier = Modifier
@@ -57,23 +56,23 @@ fun MessageScreen(viewModel: MessageViewModel) {
                 ),
                 keyboardActions = KeyboardActions(
                     onSend = {
-                        viewModel.sendMessage(
-                            messageContent,
-                            "abcd"
-                        ) // Send message on pressing send
-                        messageContent = "" // Clear input field
+//                        viewModel.sendMessage(
+//                            messageContent,
+//                            "abcd"
+//                        ) // Send message on pressing send
+//                        messageContent = "" // Clear input field
                     }
                 )
             )
             Button(onClick = {
-                viewModel.sendMessage(messageContent, "abcd") // Send message on button click
-                messageContent = "" // Clear input field
+//                viewModel.sendMessage(messageContent, "abcd") // Send message on button click
+//                messageContent = "" // Clear input field
             }) {
                 Text(text = "Send")
             }
             Button(
                 onClick = {
-                    viewModel.subscribe("abcd")
+                    viewModel.subscribeToTopic("abcd")
                 },
                 enabled = true
             ) {
@@ -85,9 +84,9 @@ fun MessageScreen(viewModel: MessageViewModel) {
             reverseLayout = true, // Show latest message on top
             modifier = Modifier.weight(1f)
         ) {
-            items(messages) { message ->
-                MessageItem(message = message)
-            }
+//            items(messages) { message ->
+//                MessageItem(message = message)
+//            }
         }
 
         // Message Input Field and Send Button

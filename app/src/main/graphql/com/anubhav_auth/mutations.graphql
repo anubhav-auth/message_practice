@@ -1,0 +1,41 @@
+mutation SendMessage($id: String!, $topic:String!, $content: String!, $sender: String!){
+    sendMessage(id:$id, topic: $topic, content: $content, sender: $sender){
+        id
+        topic
+        content
+        sender
+        receiver
+        status
+        sentAt
+        deliveredAt
+        readAt
+    }
+}
+
+mutation AcknowledgeSent($id: String!){
+    acknowledgeSent(messageID: $id){
+        id
+        topic
+        sender
+        receiver
+        sentAt
+    }
+}
+mutation AcknowledgeDelivery($id: String!){
+    acknowledgeDelivery(messageId: $id){
+        id
+        topic
+        sender
+        receiver
+        deliveredAt
+    }
+}
+mutation AcknowledgeRead($id: String!){
+    acknowledgeRead(messageId: $id){
+        id
+        topic
+        sender
+        receiver
+        readAt
+    }
+}

@@ -1,0 +1,25 @@
+subscription MessageAdded($topic: String!){
+    messageAdded(topic: $topic){
+        id
+        topic
+        content
+        sender
+        receiver
+        status
+        sentAt
+        deliveredAt
+        readAt
+    }
+}
+
+subscription MessageStatusUpdate($userID: String!){
+    messageStatusUpdated(topic: $userID){
+        id
+        sender
+        receiver
+        status
+        sentAt
+        deliveredAt
+        readAt
+    }
+}
