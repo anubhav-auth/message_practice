@@ -1,13 +1,13 @@
 package com.anubhav_auth.message_practice.ui.message
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -15,40 +15,43 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
+import com.anubhav_auth.message_practice.utils.NavArguments
 
 @Composable
 fun HomeScreen(viewModel: MessageViewModel, navController: NavController) {
     val uniqueSenders by viewModel.uniqueSenders.collectAsState()
     val lastMessageBetweenUsers by viewModel.lastMessageBetweenUsers.collectAsState()
-    Log.d("ApolloMessageClient", "unique: ${uniqueSenders}")
+    Scaffold{ paddingVal ->
+        ChatMenu(
+            modifier = Modifier.padding(paddingVal),
+            uniqueSenders = uniqueSenders,
+            lastMessageBetweenUsers = lastMessageBetweenUsers,
+            navController = navController,
+            messageViewModel = viewModel
+        )
+    }
 
-    ChatMenu(uniqueSenders = uniqueSenders, lastMessageBetweenUsers = lastMessageBetweenUsers)
-
-}
-
-@Composable
-fun test(modifier: Modifier = Modifier) {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Red))
 }
 
 @Composable
 fun ChatMenu(
+    modifier: Modifier = Modifier,
     uniqueSenders: List<String>,
-    lastMessageBetweenUsers: Map<String, String>
+    lastMessageBetweenUsers: Map<String, String>,
+    navController: NavController,
+    messageViewModel: MessageViewModel
 ) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(uniqueSenders){ uniqueSender->
-            lastMessageBetweenUsers[uniqueSender]?.let {
-                ChatItemContent(
+    LazyColumn(modifier = modifier.fillMaxSize()) {
+        items(uniqueSenders) { uniqueSender ->
+            ChatItem(
+                chatItemContent = ChatItemContent(
                     sender = uniqueSender,
-                    lastMessage = it
+                    lastMessage = lastMessageBetweenUsers[uniqueSender] ?: "No Messages Yet"
                 )
-            }?.let {
-                ChatItem(chatItemContent = it) {
-                    //TODO
-                }
+            ) {
+                messageViewModel.chatPartnerID = it
+                messageViewModel.getMessageBetweenUsers()
+                navController.navigate(NavArguments.CHATSCREEN.toString())
             }
         }
     }
@@ -57,13 +60,13 @@ fun ChatMenu(
 @Composable
 fun ChatItem(
     chatItemContent: ChatItemContent,
-    onClick: () -> Unit
+    onClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
             .background(Color.Cyan)
             .clickable {
-                onClick()
+                onClick(chatItemContent.sender)
             }
     ) {
         Text(text = chatItemContent.sender)

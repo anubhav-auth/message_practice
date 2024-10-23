@@ -19,7 +19,7 @@ class MessageViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val loggedInUserId = "+919883192692"
-    var chatPartnerID = null
+    var chatPartnerID = ""
 
     private val _uniqueSenders = MutableStateFlow<List<String>>(emptyList())
     val uniqueSenders = _uniqueSenders.asStateFlow()
@@ -32,23 +32,20 @@ class MessageViewModel @Inject constructor(
 
 
     init {
-//            viewModelScope.launch {
-//                messagesRepository.upsertTopic("abcd")
-//                messagesRepository.upsertTopic("abcde")
-//                messagesRepository.upsertTopic("abcdf")
-//            }
-            getAllUniqueSenders()
-            subscribeToTopic("abcd")
-//            subscribeToAllTopics()
-
+        getAllUniqueSenders()
+        viewModelScope.launch {
+            messagesRepository.getAllUniqueSenders().forEach { sender ->
+                getLastMessageBetweenUsers(sender)
+            }
+        }
+        subscribeToTopic(loggedInUserId)
     }
 
     fun subscribeToTopic(topic: String) {
         viewModelScope.launch {
             messagesRepository.subscribeToTopic(topic).collectLatest {
                 if (it != null) {
-                    Log.d("ApolloMessageClient", "subscribeToTopic: $it")
-                    getLastMessageBetweenUsers(it.sender)
+                    getLastMessageBetweenUsers("abcd")
                     getAllUniqueSenders()
                     if (it.sender == chatPartnerID) {
                         _messagesBetweenUsers.update { newMessages ->
@@ -84,14 +81,14 @@ class MessageViewModel @Inject constructor(
 
     private fun getAllUniqueSenders() {
         viewModelScope.launch {
-            Log.d("ApolloMessageClient", "getAllUniqueSenders: ")
+            val senders = messagesRepository.getAllUniqueSenders()
             _uniqueSenders.update {
-                messagesRepository.getAllUniqueSenders()
+                senders
             }
         }
     }
 
-    fun getMessageBetweenUsers(chatPartnerID: String) {
+    fun getMessageBetweenUsers() {
         viewModelScope.launch {
             messagesRepository.getMessageBetweenUsers(loggedInUserId, chatPartnerID).collectLatest {
                 _messagesBetweenUsers.value = it
@@ -103,6 +100,7 @@ class MessageViewModel @Inject constructor(
         viewModelScope.launch {
             messagesRepository.getLastMessageBetweenUsers(loggedInUserId, chatPartnerID)
                 .collectLatest { message ->
+                    Log.d("ApolloMessageClient", " last mess${message?.content.toString()}")
                     message?.let {
                         _lastMessageBetweenUsers.update { currentmsgs ->
                             currentmsgs.toMutableMap().apply {
@@ -112,30 +110,28 @@ class MessageViewModel @Inject constructor(
                     }
                 }
         }
-
-        fun sendMessage(topic: String, sender: String, message: String) {
-            viewModelScope.launch {
-                messagesRepository.sendMessage(topic, sender, message)
-            }
+    }
+    fun sendMessage(message: String) {
+        viewModelScope.launch {
+            messagesRepository.sendMessage(chatPartnerID, loggedInUserId, message)
         }
+    }
 
-        fun deleteMessage(message: Message) {
-            viewModelScope.launch {
-                messagesRepository.deleteMessage(message)
-            }
+    fun deleteMessage(message: Message) {
+        viewModelScope.launch {
+            messagesRepository.deleteMessage(message)
         }
+    }
 
-        fun upsertTopic(topic: String) {
-            viewModelScope.launch {
-                messagesRepository.upsertTopic(topic)
-            }
+    fun upsertTopic(topic: String) {
+        viewModelScope.launch {
+            messagesRepository.upsertTopic(topic)
         }
+    }
 
-        fun deleteTopic(topic: String) {
-            viewModelScope.launch {
-                messagesRepository.deleteTopic(topic)
-            }
+    fun deleteTopic(topic: String) {
+        viewModelScope.launch {
+            messagesRepository.deleteTopic(topic)
         }
-
     }
 }

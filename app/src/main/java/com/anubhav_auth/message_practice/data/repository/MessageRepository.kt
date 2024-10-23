@@ -1,5 +1,6 @@
 package com.anubhav_auth.message_practice.data.repository
 
+import android.util.Log
 import com.anubhav_auth.message_practice.data.local.MessagesDAO
 import com.anubhav_auth.message_practice.data.local.TopicsSubscribedDAO
 import com.anubhav_auth.message_practice.data.model.Message
@@ -31,6 +32,7 @@ class MessageRepository @Inject constructor(
         return channelFlow {
             apolloMessageClient.subscribeToTopic(topic).collectLatest { message ->
                 message?.let {
+                    Log.d("ApolloMessageClient1", "subscribeToTopic: $it")
                     messagesDAO.upsertMessage(it)
                     send(it)
                 }
