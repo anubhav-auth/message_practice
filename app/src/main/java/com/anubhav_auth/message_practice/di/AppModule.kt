@@ -3,8 +3,10 @@ package com.anubhav_auth.message_practice.di
 
 import android.app.Application
 import androidx.room.Room
+import com.anubhav_auth.message_practice.data.local.MessagesBackLogDAO
 import com.anubhav_auth.message_practice.data.local.MessagesDAO
 import com.anubhav_auth.message_practice.data.local.MessagesDatabase
+import com.anubhav_auth.message_practice.data.local.MessagesStatusUpdateBackLogDAO
 import com.anubhav_auth.message_practice.data.local.TopicsSubscribedDAO
 import com.anubhav_auth.message_practice.data.remote.ApolloMessageClient
 import com.anubhav_auth.message_practice.data.repository.MessageRepository
@@ -71,8 +73,20 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideMessagesBackLogDao(messagesDatabase: MessagesDatabase): MessagesBackLogDAO {
+        return messagesDatabase.messagesBackLogDao()
+    }
+
+    @Provides
+    @Singleton
     fun providesTopicsSubscribedDao(messagesDatabase: MessagesDatabase): TopicsSubscribedDAO {
         return messagesDatabase.topicsSubscribedDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providesMessagesStatusUpdateBackLogDao(messagesDatabase: MessagesDatabase): MessagesStatusUpdateBackLogDAO {
+        return messagesDatabase.messagesStatusUpdateBackLogDao()
     }
 
     @Provides
@@ -80,9 +94,11 @@ object AppModule {
     fun provideMessageRepository(
         apolloMessageClient: ApolloMessageClient,
         messagesDAO: MessagesDAO,
+        messagesBackLogDAO: MessagesBackLogDAO,
+        messagesStatusUpdateBackLogDAO: MessagesStatusUpdateBackLogDAO,
         topicsSubscribedDAO: TopicsSubscribedDAO
     ): MessageRepository {
-        return MessageRepository(apolloMessageClient, messagesDAO, topicsSubscribedDAO)
+        return MessageRepository(apolloMessageClient, messagesDAO,messagesBackLogDAO, messagesStatusUpdateBackLogDAO, topicsSubscribedDAO)
     }
 
 }

@@ -1,5 +1,5 @@
-mutation SendMessage($id: String!, $topic:String!, $content: String!, $sender: String!){
-    sendMessage(id:$id, topic: $topic, content: $content, sender: $sender){
+mutation SendMessage($id: String!, $topic:String!, $content: String!, $sender: String!, $sentAt: String!){
+    sendMessage(id:$id, topic: $topic, content: $content, sender: $sender, sentAt: $sentAt){
         id
         topic
         content
@@ -11,31 +11,12 @@ mutation SendMessage($id: String!, $topic:String!, $content: String!, $sender: S
         readAt
     }
 }
-
-mutation AcknowledgeSent($id: String!){
-    acknowledgeSent(messageID: $id){
+mutation StatusUpdate($id: String!, $topic:String!, $statusUpdate: MessageStatus! , $deliveredAt: String!, $readAt: String!){
+    statusUpdate(messageId: $id, topic: $topic, status: $statusUpdate, deliveredAt: $deliveredAt, readAt: $readAt){
         id
-        topic
-        sender
         receiver
-        sentAt
-    }
-}
-mutation AcknowledgeDelivery($id: String!){
-    acknowledgeDelivery(messageId: $id){
-        id
-        topic
-        sender
-        receiver
+        status
         deliveredAt
-    }
-}
-mutation AcknowledgeRead($id: String!){
-    acknowledgeRead(messageId: $id){
-        id
-        topic
-        sender
-        receiver
         readAt
     }
 }

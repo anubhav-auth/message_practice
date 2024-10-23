@@ -21,7 +21,7 @@ import com.anubhav_auth.message_practice.utils.NavArguments
 fun HomeScreen(viewModel: MessageViewModel, navController: NavController) {
     val uniqueSenders by viewModel.uniqueSenders.collectAsState()
     val lastMessageBetweenUsers by viewModel.lastMessageBetweenUsers.collectAsState()
-    Scaffold{ paddingVal ->
+    Scaffold { paddingVal ->
         ChatMenu(
             modifier = Modifier.padding(paddingVal),
             uniqueSenders = uniqueSenders,

@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anubhav_auth.message_practice.data.model.Message
 import com.anubhav_auth.message_practice.data.repository.MessageRepository
+import com.anubhav_auth.message_practice.utils.ConnectionState
+import com.anubhav_auth.message_practice.utils.checkUsers
+import com.anubhav_auth.type.MessageStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +21,9 @@ class MessageViewModel @Inject constructor(
     private val messagesRepository: MessageRepository
 ) : ViewModel() {
 
-    private val loggedInUserId = "+919883192692"
+    val connectionState = messagesRepository.connectionState
+
+    val loggedInUserId = "+919883192692"
     var chatPartnerID = ""
 
     private val _uniqueSenders = MutableStateFlow<List<String>>(emptyList())
@@ -32,21 +37,38 @@ class MessageViewModel @Inject constructor(
 
 
     init {
+        observeConnectionState()
         getAllUniqueSenders()
-        viewModelScope.launch {
-            messagesRepository.getAllUniqueSenders().forEach { sender ->
-                getLastMessageBetweenUsers(sender)
-            }
-        }
         subscribeToTopic(loggedInUserId)
+        subscribeToUpdates(loggedInUserId)
     }
 
-    fun subscribeToTopic(topic: String) {
+    private fun observeConnectionState(){
+        viewModelScope.launch {
+            connectionState.collectLatest { state->
+                when(state){
+                    ConnectionState.Connected -> {
+                        Log.d("ApolloMessageClient", "Connected")
+                        messagesRepository.clearBackLog()
+                    }
+                    is ConnectionState.Disconnected -> {
+                        Log.d("ApolloMessageClient", "Disconnected: ${state.reason}")
+                    }
+                    is ConnectionState.Error -> {
+                        Log.d("ApolloMessageClient", "Error: ${state.error}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun subscribeToTopic(topic: String) {
         viewModelScope.launch {
             messagesRepository.subscribeToTopic(topic).collectLatest {
                 if (it != null) {
                     getLastMessageBetweenUsers("abcd")
                     getAllUniqueSenders()
+                    sendUpdate(it.id, it.topic, MessageStatus.DELIVERED)
                     if (it.sender == chatPartnerID) {
                         _messagesBetweenUsers.update { newMessages ->
                             newMessages.toMutableList().apply {
@@ -56,6 +78,20 @@ class MessageViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun subscribeToUpdates(topic: String) {
+        viewModelScope.launch {
+            messagesRepository.subscribeToUpdates(topic).collectLatest {
+                Log.d("ApolloMessageClient", "Received message status updates: $it")
+            }
+        }
+    }
+
+    private fun sendUpdate(id:String, topic: String, status: MessageStatus) {
+        viewModelScope.launch {
+            messagesRepository.sendUpdate(id, topic, status)
         }
     }
 
@@ -79,9 +115,14 @@ class MessageViewModel @Inject constructor(
         }
     }
 
+
+
     private fun getAllUniqueSenders() {
         viewModelScope.launch {
-            val senders = messagesRepository.getAllUniqueSenders()
+            val senders = messagesRepository.getAllUniqueSenders().checkUsers(loggedInUserId)
+            senders.forEach { sender ->
+                getLastMessageBetweenUsers(sender)
+            }
             _uniqueSenders.update {
                 senders
             }

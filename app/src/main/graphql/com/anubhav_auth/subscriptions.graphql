@@ -12,13 +12,11 @@ subscription MessageAdded($topic: String!){
     }
 }
 
-subscription MessageStatusUpdate($userID: String!){
-    messageStatusUpdated(topic: $userID){
+subscription MessageStatusUpdate($topic: String!){
+    messageUpdates(topic: $topic){
         id
-        sender
         receiver
         status
-        sentAt
         deliveredAt
         readAt
     }
