@@ -2,6 +2,7 @@ package com.anubhav_auth.message_practice.data.remote
 
 import android.util.Log
 import com.anubhav_auth.MessageAddedSubscription
+import com.anubhav_auth.MessageStatusUpdateSubscription
 import com.anubhav_auth.SendMessageMutation
 import com.anubhav_auth.StatusUpdateMutation
 import com.anubhav_auth.message_practice.data.model.Message
@@ -58,8 +59,8 @@ class ApolloMessageClient(
 
     override suspend fun subscribeToMessageStatusUpdates(topic: String): Flow<MessageStatusUpdates?> {
 
-        return apolloClient.subscription(MessageAddedSubscription(topic)).toFlow().map { response ->
-            response.data?.messageAdded?.let {
+        return apolloClient.subscription(MessageStatusUpdateSubscription(topic)).toFlow().map { response ->
+            response.data?.messageUpdates?.let {
                 MessageStatusUpdates(
                     id = it.id,
                     receiver = it.receiver,
@@ -105,7 +106,10 @@ class ApolloMessageClient(
         }
     }
 
-    override suspend fun statusUpdate(message: MessageStatusUpdates, status: MessageStatus): MessageStatusUpdates? {
+    override suspend fun statusUpdate(
+        message: MessageStatusUpdates,
+        status: MessageStatus
+    ): MessageStatusUpdates? {
         val mutation = StatusUpdateMutation(
             id = message.id,
             topic = message.receiver,

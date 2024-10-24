@@ -4,8 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.anubhav_auth.type.MessageStatus
 
-//import com.anubhav_auth.type.MessageStatus
-
 @Entity
 data class Message(
     @PrimaryKey(autoGenerate = false)

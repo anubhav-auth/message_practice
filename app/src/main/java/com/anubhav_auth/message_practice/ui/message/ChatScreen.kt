@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -63,7 +64,10 @@ fun ChatScreen(navController: NavController, viewModel: MessageViewModel) {
             ChatList(
                 modifier = Modifier.padding(bottom = 80.dp),
                 chats = chats,
-                currentUser = currentUser
+                currentUser = currentUser.value,
+                updateToRead = { id, topic, status ->
+                    viewModel.sendUpdate(id, topic, status)
+                }
             )
             ChatInputField(modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -78,19 +82,60 @@ fun ChatScreen(navController: NavController, viewModel: MessageViewModel) {
 }
 
 @Composable
-fun ChatList(modifier: Modifier = Modifier, chats: List<Message>, currentUser: String) {
+fun ChatList(
+    modifier: Modifier = Modifier,
+    chats: List<Message>,
+    currentUser: String,
+    updateToRead: (id: String, topic: String, status: MessageStatus) -> Unit
+) {
 
     val listState = rememberLazyListState()
+    val firstUnreadIndex = chats.indexOfFirst { chat -> chat.status == MessageStatus.DELIVERED }
+    val unreadMessagesCount = chats.count { chat -> chat.status == MessageStatus.DELIVERED }
+    val scrollToIndex = if (firstUnreadIndex == -1) chats.size - 1 else firstUnreadIndex
 
     LazyColumn(modifier = modifier.fillMaxSize(), state = listState) {
+//        if (firstUnreadIndex != -1) {
+//            item {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(
+//                            brush = Brush.verticalGradient(
+//                                colors = listOf(Color.Gray, Color.Transparent, Color.Gray)
+//                            )
+//                        )
+//                        .padding(8.dp)
+//                ) {
+//                    Text(
+//                        text = "Unread messages ($unreadMessagesCount)",
+//                        color = Color.White,
+//                        modifier = Modifier.align(Alignment.Center)
+//                    )
+//                }
+//            }
+//        }
+
+
         items(chats) { chat ->
             ChatItem(chat = chat, currentUser = currentUser)
         }
     }
 
+//    LaunchedEffect(listState) {
+//        listState.layoutInfo.visibleItemsInfo
+//            .map { it.index }
+//            .forEach { index ->
+//                val visibleMessage = chats[index-1]
+//                if (visibleMessage.status == MessageStatus.DELIVERED) {
+//                    updateToRead(visibleMessage.id, visibleMessage.topic, MessageStatus.READ)
+//                }
+//            }
+//    }
+
     LaunchedEffect(chats) {
         if (chats.isNotEmpty()) {
-            listState.scrollToItem(chats.size - 1)
+            listState.scrollToItem(scrollToIndex)
         }
     }
 }
@@ -166,3 +211,4 @@ fun ChatInputField(modifier: Modifier = Modifier, onMessageSent: (String) -> Uni
         }
     }
 }
+

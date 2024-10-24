@@ -8,8 +8,11 @@ import com.anubhav_auth.message_practice.data.model.MessageStatusUpdates
 import com.anubhav_auth.message_practice.data.model.TopicsSubscribed
 
 
-@Database(entities = [Message::class, MessageBackLog::class,MessageStatusUpdates::class, TopicsSubscribed::class], version = 1)
-abstract class MessagesDatabase: RoomDatabase() {
+@Database(
+    entities = [Message::class, MessageBackLog::class, MessageStatusUpdates::class, TopicsSubscribed::class],
+    version = 1
+)
+abstract class MessagesDatabase : RoomDatabase() {
     abstract fun messagesDao(): MessagesDAO
     abstract fun messagesBackLogDao(): MessagesBackLogDAO
     abstract fun messagesStatusUpdateBackLogDao(): MessagesStatusUpdateBackLogDAO

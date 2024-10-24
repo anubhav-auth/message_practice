@@ -23,11 +23,14 @@ class MainActivity : ComponentActivity() {
             val messagesViewModel = hiltViewModel<MessageViewModel>()
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = NavArguments.HOMESCREEN.toString()){
-                composable(NavArguments.HOMESCREEN.toString()){
+            NavHost(
+                navController = navController,
+                startDestination = NavArguments.HOMESCREEN.toString()
+            ) {
+                composable(NavArguments.HOMESCREEN.toString()) {
                     HomeScreen(viewModel = messagesViewModel, navController = navController)
                 }
-                composable(NavArguments.CHATSCREEN.toString()){
+                composable(NavArguments.CHATSCREEN.toString()) {
                     ChatScreen(viewModel = messagesViewModel, navController = navController)
                 }
             }

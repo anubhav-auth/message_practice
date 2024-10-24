@@ -1,6 +1,8 @@
 package com.anubhav_auth.message_practice.ui.message
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anubhav_auth.message_practice.data.model.Message
@@ -23,8 +25,8 @@ class MessageViewModel @Inject constructor(
 
     val connectionState = messagesRepository.connectionState
 
-    val loggedInUserId = "+919883192692"
-    var chatPartnerID = ""
+    val loggedInUserId = mutableStateOf("9883192692")
+    var chatPartnerID = mutableStateOf("")
 
     private val _uniqueSenders = MutableStateFlow<List<String>>(emptyList())
     val uniqueSenders = _uniqueSenders.asStateFlow()
@@ -39,21 +41,23 @@ class MessageViewModel @Inject constructor(
     init {
         observeConnectionState()
         getAllUniqueSenders()
-        subscribeToTopic(loggedInUserId)
-        subscribeToUpdates(loggedInUserId)
+        subscribeToTopic(loggedInUserId.value)
+        subscribeToUpdates(loggedInUserId.value)
     }
 
-    private fun observeConnectionState(){
+    private fun observeConnectionState() {
         viewModelScope.launch {
-            connectionState.collectLatest { state->
-                when(state){
+            connectionState.collectLatest { state ->
+                when (state) {
                     ConnectionState.Connected -> {
                         Log.d("ApolloMessageClient", "Connected")
                         messagesRepository.clearBackLog()
                     }
+
                     is ConnectionState.Disconnected -> {
                         Log.d("ApolloMessageClient", "Disconnected: ${state.reason}")
                     }
+
                     is ConnectionState.Error -> {
                         Log.d("ApolloMessageClient", "Error: ${state.error}")
                     }
@@ -62,14 +66,14 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    private fun subscribeToTopic(topic: String) {
+    fun subscribeToTopic(topic: String) {
         viewModelScope.launch {
             messagesRepository.subscribeToTopic(topic).collectLatest {
                 if (it != null) {
-                    getLastMessageBetweenUsers("abcd")
+                    getLastMessageBetweenUsers(it.sender)
                     getAllUniqueSenders()
                     sendUpdate(it.id, it.topic, MessageStatus.DELIVERED)
-                    if (it.sender == chatPartnerID) {
+                    if (it.sender == chatPartnerID.value) {
                         _messagesBetweenUsers.update { newMessages ->
                             newMessages.toMutableList().apply {
                                 add(it)
@@ -81,7 +85,7 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    private fun subscribeToUpdates(topic: String) {
+    fun subscribeToUpdates(topic: String) {
         viewModelScope.launch {
             messagesRepository.subscribeToUpdates(topic).collectLatest {
                 Log.d("ApolloMessageClient", "Received message status updates: $it")
@@ -89,7 +93,7 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    private fun sendUpdate(id:String, topic: String, status: MessageStatus) {
+    fun sendUpdate(id: String, topic: String, status: MessageStatus) {
         viewModelScope.launch {
             messagesRepository.sendUpdate(id, topic, status)
         }
@@ -102,7 +106,7 @@ class MessageViewModel @Inject constructor(
                     if (it != null) {
                         getLastMessageBetweenUsers(it.sender)
                         getAllUniqueSenders()
-                        if (it.sender == chatPartnerID) {
+                        if (it.sender == chatPartnerID.value) {
                             _messagesBetweenUsers.update { newMessages ->
                                 newMessages.toMutableList().apply {
                                     add(it)
@@ -116,10 +120,9 @@ class MessageViewModel @Inject constructor(
     }
 
 
-
     private fun getAllUniqueSenders() {
         viewModelScope.launch {
-            val senders = messagesRepository.getAllUniqueSenders().checkUsers(loggedInUserId)
+            val senders = messagesRepository.getAllUniqueSenders().checkUsers(loggedInUserId.value)
             senders.forEach { sender ->
                 getLastMessageBetweenUsers(sender)
             }
@@ -131,17 +134,17 @@ class MessageViewModel @Inject constructor(
 
     fun getMessageBetweenUsers() {
         viewModelScope.launch {
-            messagesRepository.getMessageBetweenUsers(loggedInUserId, chatPartnerID).collectLatest {
+            messagesRepository.getMessageBetweenUsers(loggedInUserId.value, chatPartnerID.value).collectLatest {
                 _messagesBetweenUsers.value = it
             }
         }
     }
 
-    fun getLastMessageBetweenUsers(chatPartnerID: String) {
+    private fun getLastMessageBetweenUsers(chatPartnerID: String) {
         viewModelScope.launch {
-            messagesRepository.getLastMessageBetweenUsers(loggedInUserId, chatPartnerID)
+            messagesRepository.getLastMessageBetweenUsers(loggedInUserId.value, chatPartnerID)
                 .collectLatest { message ->
-                    Log.d("ApolloMessageClient", " last mess${message?.content.toString()}")
+                    Log.d("ApolloMessageClient", " last mess ${message?.content.toString()}")
                     message?.let {
                         _lastMessageBetweenUsers.update { currentmsgs ->
                             currentmsgs.toMutableMap().apply {
@@ -152,9 +155,10 @@ class MessageViewModel @Inject constructor(
                 }
         }
     }
+
     fun sendMessage(message: String) {
         viewModelScope.launch {
-            messagesRepository.sendMessage(chatPartnerID, loggedInUserId, message)
+            messagesRepository.sendMessage(chatPartnerID.value, loggedInUserId.value, message)
         }
     }
 

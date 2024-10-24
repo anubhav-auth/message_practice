@@ -9,5 +9,8 @@ interface MessageClient {
     suspend fun subscribeToTopic(topic: String): Flow<Message?>
     suspend fun subscribeToMessageStatusUpdates(topic: String): Flow<MessageStatusUpdates?>
     suspend fun sendMessage(message: Message): Message?
-    suspend fun statusUpdate(message: MessageStatusUpdates, status: MessageStatus): MessageStatusUpdates?
+    suspend fun statusUpdate(
+        message: MessageStatusUpdates,
+        status: MessageStatus
+    ): MessageStatusUpdates?
 }

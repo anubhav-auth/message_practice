@@ -32,7 +32,7 @@ class MessageRepository @Inject constructor(
 
     val connectionState: Flow<ConnectionState> = apolloMessageClient.authState
 
-    suspend fun subscribeToTopic(topic: String): Flow<Message?> {
+    fun subscribeToTopic(topic: String): Flow<Message?> {
         return channelFlow {
             apolloMessageClient.subscribeToTopic(topic).collectLatest { message ->
                 message?.let {
@@ -43,12 +43,13 @@ class MessageRepository @Inject constructor(
             }
         }
     }
-    suspend fun subscribeToUpdates(topic: String): Flow<MessageStatusUpdates?> {
+
+    fun subscribeToUpdates(topic: String): Flow<MessageStatusUpdates?> {
         return channelFlow {
             apolloMessageClient.subscribeToMessageStatusUpdates(topic).collectLatest { message ->
                 message?.let {
                     Log.d("ApolloMessageClient1", "subscribeToUpdates: $it")
-                    messagesDAO.getMessageFromId(it.id).let { msg->
+                    messagesDAO.getMessageFromId(it.id)?.let { msg ->
                         val newMsg = msg.copy(
                             status = it.status,
                             deliveredAt = it.deliveredAt,
@@ -62,10 +63,15 @@ class MessageRepository @Inject constructor(
         }
     }
 
-    suspend fun sendUpdate(id:String, topic: String, status: MessageStatus): MessageStatusUpdates? {
+    suspend fun sendUpdate(
+        id: String,
+        topic: String,
+        status: MessageStatus
+    ): MessageStatusUpdates? {
 
-        val readTime = if(status == MessageStatus.READ) LocalDateTime.now().toString() else ""
-        val deliveredTime = if(status == MessageStatus.DELIVERED) LocalDateTime.now().toString() else ""
+        val readTime = if (status == MessageStatus.READ) LocalDateTime.now().toString() else ""
+        val deliveredTime =
+            if (status == MessageStatus.DELIVERED) LocalDateTime.now().toString() else ""
 
         val newMsg = MessageStatusUpdates(
             id = id,
@@ -78,7 +84,7 @@ class MessageRepository @Inject constructor(
         messageStatusUpdatesDAO.upsertMessageStatus(newMsg)
 
         val messageUpdateFromServer =
-            apolloMessageClient.statusUpdate(newMsg,status)
+            apolloMessageClient.statusUpdate(newMsg, status)
 
         messageUpdateFromServer?.let {
             val msg = messagesDAO.getMessageFromId(it.id).copy(
@@ -154,23 +160,24 @@ class MessageRepository @Inject constructor(
     private fun getAllMessagesBackLog(): Flow<List<MessageBackLog>> {
         return messagesBackLogDAO.getAllMessagesBackLog()
     }
+
     private fun getAllMessagesStatusUpdateBackLog(): Flow<List<MessageStatusUpdates>> {
         return messageStatusUpdatesDAO.getAllMessagesStatusUpdateBackLog()
     }
 
-    suspend fun clearBackLog(){
-        getAllMessagesBackLog().collectLatest { backLogMess->
+    suspend fun clearBackLog() {
+        getAllMessagesBackLog().collectLatest { backLogMess ->
             backLogMess.forEach {
-                apolloMessageClient.sendMessage(it.toMessage())?.let { message->
+                apolloMessageClient.sendMessage(it.toMessage())?.let { message ->
                     messagesDAO.upsertMessage(message)
                     messagesBackLogDAO.deleteMessage(message.toBackLog())
                 }
             }
         }
 
-        getAllMessagesStatusUpdateBackLog().collectLatest { updateBackLog->
+        getAllMessagesStatusUpdateBackLog().collectLatest { updateBackLog ->
             updateBackLog.forEach {
-                apolloMessageClient.statusUpdate(it,it.status)?.let {messUp->
+                apolloMessageClient.statusUpdate(it, it.status)?.let { messUp ->
                     val msg = messagesDAO.getMessageFromId(messUp.id).copy(
                         status = messUp.status,
                         deliveredAt = messUp.deliveredAt,

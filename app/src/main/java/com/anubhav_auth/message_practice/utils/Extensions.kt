@@ -18,7 +18,7 @@ fun String.getFormattedTime(): String {
     return formattedDateTimeString
 }
 
-fun Message.toBackLog():MessageBackLog{
+fun Message.toBackLog(): MessageBackLog {
     return MessageBackLog(
         id = this.id,
         topic = this.topic,
@@ -32,7 +32,7 @@ fun Message.toBackLog():MessageBackLog{
     )
 }
 
-fun MessageBackLog.toMessage():Message{
+fun MessageBackLog.toMessage(): Message {
     return Message(
         id = this.id,
         topic = this.topic,

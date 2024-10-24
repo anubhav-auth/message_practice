@@ -11,7 +11,6 @@ import com.anubhav_auth.message_practice.data.local.TopicsSubscribedDAO
 import com.anubhav_auth.message_practice.data.remote.ApolloMessageClient
 import com.anubhav_auth.message_practice.data.repository.MessageRepository
 import com.apollographql.apollo.ApolloClient
-import com.apollographql.apollo.network.okHttpClient
 import com.apollographql.apollo.network.ws.GraphQLWsProtocol
 import com.apollographql.apollo.network.ws.WebSocketNetworkTransport
 import dagger.Module
@@ -28,7 +27,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApolloClient():ApolloClient{
+    fun provideApolloClient(): ApolloClient {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BODY)
 
@@ -49,6 +48,7 @@ object AppModule {
 
         return apolloClient
     }
+
     @Provides
     @Singleton
     fun provideMessageClient(apolloClient: ApolloClient): ApolloMessageClient {
@@ -98,7 +98,13 @@ object AppModule {
         messagesStatusUpdateBackLogDAO: MessagesStatusUpdateBackLogDAO,
         topicsSubscribedDAO: TopicsSubscribedDAO
     ): MessageRepository {
-        return MessageRepository(apolloMessageClient, messagesDAO,messagesBackLogDAO, messagesStatusUpdateBackLogDAO, topicsSubscribedDAO)
+        return MessageRepository(
+            apolloMessageClient,
+            messagesDAO,
+            messagesBackLogDAO,
+            messagesStatusUpdateBackLogDAO,
+            topicsSubscribedDAO
+        )
     }
 
 }
