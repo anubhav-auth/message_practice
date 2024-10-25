@@ -37,16 +37,16 @@ fun HomeScreen(viewModel: MessageViewModel, navController: NavController) {
     val lastMessageBetweenUsers by viewModel.lastMessageBetweenUsers.collectAsState()
     Scaffold { paddingVal ->
         Column (modifier = Modifier.padding(paddingVal),){
-//            TopicInputField(text = "loggedinuser") {
-////                viewModel.loggedInUserId.value = it
-////                viewModel.subscribeToTopic(it)
-////                viewModel.subscribeToUpdates(it)
-//            }
-//            TopicInputField(text = "chatpartner") {
-//                viewModel.chatPartnerID.value = it
-//                viewModel.sendMessage(it)
-//            }
-//            Spacer(modifier = Modifier.height(8.dp))
+            TopicInputField(text = "loggedinuser") {
+                viewModel.loggedInUserId.value = it
+                viewModel.subscribeToTopic(it)
+                viewModel.subscribeToUpdates(it)
+            }
+            TopicInputField(text = "chatpartner") {
+                viewModel.chatPartnerID.value = it
+                viewModel.sendMessage(it)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             ChatMenu(
 
                 uniqueSenders = uniqueSenders,

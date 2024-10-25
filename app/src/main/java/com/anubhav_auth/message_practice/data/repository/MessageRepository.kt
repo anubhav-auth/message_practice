@@ -141,8 +141,9 @@ class MessageRepository @Inject constructor(
         return messagesDAO.getLastMessageBetweenUsers(loggedInUserId, chatPartnerID)
     }
 
-    suspend fun getAllUniqueSenders(): List<String> {
-        return messagesDAO.getAllUniqueSenders()
+    suspend fun getAllUniqueSenders(loggedInUserId: String): List<String> {
+        val a = messagesDAO.getAllUniqueSenders(loggedInUserId = loggedInUserId)
+        return a
     }
 
     suspend fun upsertTopic(topic: String) {

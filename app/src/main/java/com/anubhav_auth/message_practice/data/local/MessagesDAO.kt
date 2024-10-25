@@ -28,8 +28,14 @@ interface MessagesDAO {
         chatPartnerID: String
     ): Flow<List<Message>>
 
-    @Query("SELECT DISTINCT sender FROM message")
-    suspend fun getAllUniqueSenders(): List<String>
+    @Query("""
+    SELECT DISTINCT CASE WHEN sender = :loggedInUserId THEN receiver ELSE sender END AS user
+    FROM Message m
+    WHERE (sender = :loggedInUserId OR receiver = :loggedInUserId)
+    GROUP BY user
+    ORDER BY MAX(CASE WHEN sender = :loggedInUserId THEN m.sentAt ELSE m.deliveredAt END) DESC
+""")
+    suspend fun getAllUniqueSenders(loggedInUserId: String): List<String>
 
     @Query("SELECT * FROM MESSAGE WHERE (sender = :loggedInUserId AND receiver = :chatPartnerID) OR (sender = :chatPartnerID AND receiver = :loggedInUserId) ORDER BY sentAt DESC LIMIT 1")
     fun getLastMessageBetweenUsers(loggedInUserId: String, chatPartnerID: String): Flow<Message?>

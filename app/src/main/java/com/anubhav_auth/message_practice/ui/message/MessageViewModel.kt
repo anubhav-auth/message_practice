@@ -23,7 +23,7 @@ class MessageViewModel @Inject constructor(
     private val messagesRepository: MessageRepository
 ) : ViewModel() {
 
-    val connectionState = messagesRepository.connectionState
+    private val connectionState = messagesRepository.connectionState
 
     val loggedInUserId = mutableStateOf("9883192692")
     var chatPartnerID = mutableStateOf("")
@@ -122,7 +122,7 @@ class MessageViewModel @Inject constructor(
 
     private fun getAllUniqueSenders() {
         viewModelScope.launch {
-            val senders = messagesRepository.getAllUniqueSenders().checkUsers(loggedInUserId.value)
+            val senders = messagesRepository.getAllUniqueSenders(loggedInUserId.value)
             senders.forEach { sender ->
                 getLastMessageBetweenUsers(sender)
             }
@@ -159,6 +159,7 @@ class MessageViewModel @Inject constructor(
     fun sendMessage(message: String) {
         viewModelScope.launch {
             messagesRepository.sendMessage(chatPartnerID.value, loggedInUserId.value, message)
+            getAllUniqueSenders()
         }
     }
 
