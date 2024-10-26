@@ -36,7 +36,6 @@ class MessageRepository @Inject constructor(
         return channelFlow {
             apolloMessageClient.subscribeToTopic(topic).collectLatest { message ->
                 message?.let {
-                    Log.d("ApolloMessageClient1", "subscribeToTopic: $it")
                     messagesDAO.upsertMessage(it)
                     send(it)
                 }
@@ -48,13 +47,15 @@ class MessageRepository @Inject constructor(
         return channelFlow {
             apolloMessageClient.subscribeToMessageStatusUpdates(topic).collectLatest { message ->
                 message?.let {
-                    Log.d("ApolloMessageClient1", "subscribeToUpdates: $it")
                     messagesDAO.getMessageFromId(it.id)?.let { msg ->
                         val newMsg = msg.copy(
                             status = it.status,
                             deliveredAt = it.deliveredAt,
                             readAt = it.readAt
                         )
+                        Log.d("mytag", msg.toString())
+                        Log.d("mytag", newMsg.toString())
+
                         messagesDAO.upsertMessage(newMsg)
                         send(it)
                     }
@@ -65,7 +66,7 @@ class MessageRepository @Inject constructor(
 
     suspend fun sendUpdate(
         id: String,
-        topic: String,
+        sender: String,
         status: MessageStatus
     ): MessageStatusUpdates? {
 
@@ -75,7 +76,7 @@ class MessageRepository @Inject constructor(
 
         val newMsg = MessageStatusUpdates(
             id = id,
-            receiver = topic,
+            receiver = sender,
             status = status,
             deliveredAt = deliveredTime,
             readAt = readTime

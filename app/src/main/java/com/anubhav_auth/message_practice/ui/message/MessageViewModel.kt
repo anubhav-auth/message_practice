@@ -25,8 +25,8 @@ class MessageViewModel @Inject constructor(
 
     private val connectionState = messagesRepository.connectionState
 
-    val loggedInUserId = mutableStateOf("9883192692")
-    var chatPartnerID = mutableStateOf("")
+    val loggedInUserId = mutableStateOf("")
+    val chatPartnerID = mutableStateOf("")
 
     private val _uniqueSenders = MutableStateFlow<List<String>>(emptyList())
     val uniqueSenders = _uniqueSenders.asStateFlow()
@@ -43,6 +43,10 @@ class MessageViewModel @Inject constructor(
         getAllUniqueSenders()
         subscribeToTopic(loggedInUserId.value)
         subscribeToUpdates(loggedInUserId.value)
+    }
+
+    fun cleanMessageBTWUsers(){
+        _messagesBetweenUsers.value = emptyList()
     }
 
     private fun observeConnectionState() {
@@ -72,7 +76,7 @@ class MessageViewModel @Inject constructor(
                 if (it != null) {
                     getLastMessageBetweenUsers(it.sender)
                     getAllUniqueSenders()
-                    sendUpdate(it.id, it.topic, MessageStatus.DELIVERED)
+                    sendUpdate(it.id, it.sender, MessageStatus.DELIVERED)
                     if (it.sender == chatPartnerID.value) {
                         _messagesBetweenUsers.update { newMessages ->
                             newMessages.toMutableList().apply {
@@ -93,9 +97,9 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    fun sendUpdate(id: String, topic: String, status: MessageStatus) {
+    fun sendUpdate(id: String, sender: String, status: MessageStatus) {
         viewModelScope.launch {
-            messagesRepository.sendUpdate(id, topic, status)
+            messagesRepository.sendUpdate(id, sender, status)
         }
     }
 
